@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f2937">
+  <title>페이저 계산기</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    :root {
+      --bg: #f4f5f7; --card: #fff; --text: #111827; --muted: #6b7280;
+      --line: #e5e7eb; --accent: #2563eb; --accent-text: #fff; --err: #dc2626; --out: #eef2ff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1115; --card: #1a1d24; --text: #f3f4f6; --muted: #9ca3af;
+        --line: #2d323c; --accent: #3b82f6; --out: #1e2535; --err: #f87171;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      padding: env(safe-area-inset-top) 16px 32px;
+    }
+    main { max-width: 480px; margin: 0 auto; }
+    h1 { font-size: 20px; margin: 20px 0 4px; }
+    .hint { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
+    .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+    .tab {
+      padding: 10px 4px; border: 1px solid var(--line); background: var(--card); color: var(--text);
+      border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .tab.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+    .panel { display: none; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+    .panel.on { display: block; }
+    label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 6px; }
+    .row { display: flex; gap: 6px; }
+    input {
+      flex: 1; min-width: 0; font-size: 20px; padding: 12px; border-radius: 10px;
+      border: 1px solid var(--line); background: var(--bg); color: var(--text);
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+    }
+    input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+    .key {
+      width: 48px; font-size: 20px; border-radius: 10px; border: 1px solid var(--line);
+      background: var(--bg); color: var(--text); cursor: pointer;
+    }
+    .go {
+      width: 100%; margin-top: 14px; padding: 14px; font-size: 17px; font-weight: 700;
+      border: 0; border-radius: 10px; background: var(--accent); color: var(--accent-text); cursor: pointer;
+    }
+    .ops { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 12px; }
+    .op {
+      padding: 12px 0; font-size: 22px; border-radius: 10px; border: 1px solid var(--line);
+      background: var(--bg); color: var(--text); cursor: pointer;
+    }
+    .op.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+    .out {
+      margin-top: 14px; min-height: 56px; padding: 14px; border-radius: 10px; background: var(--out);
+      font-size: 22px; font-family: ui-monospace, Menlo, Consolas, monospace; word-break: break-all;
+    }
+    .out.err { color: var(--err); font-size: 15px; font-family: inherit; }
+    .out .sub { font-size: 15px; color: var(--muted); margin-top: 6px; }
+    footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 20px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>페이저 계산기</h1>
+  <p class="hint">회로이론용 · 각도는 도(°) 단위 · i 와 j 모두 사용 가능</p>
+
+  <div class="tabs">
+    <button class="tab on" data-panel="p1">복소수→페이저</button>
+    <button class="tab" data-panel="p2">페이저→복소수</button>
+    <button class="tab" data-panel="p3">페이저 연산</button>
+  </div>
+
+  <section class="panel on" id="p1">
+    <label for="r2pIn">복소수 (예: 5+i, 3-4j)</label>
+    <div class="row">
+      <input id="r2pIn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="5+i">
+      <button class="key" data-insert="j" data-target="r2pIn">j</button>
+    </div>
+    <button class="go" id="r2pBtn">페이저로 변환</button>
+    <div class="out" id="r2pOut"></div>
+  </section>
+
+  <section class="panel" id="p2">
+    <label for="p2rIn">페이저 (예: 5∠30, 10∠-45)</label>
+    <div class="row">
+      <input id="p2rIn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="5∠30">
+      <button class="key" data-insert="∠" data-target="p2rIn">∠</button>
+    </div>
+    <button class="go" id="p2rBtn">복소수로 변환</button>
+    <div class="out" id="p2rOut"></div>
+  </section>
+
+  <section class="panel" id="p3">
+    <label for="calcA">A (페이저 또는 복소수)</label>
+    <div class="row">
+      <input id="calcA" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="10∠30">
+      <button class="key" data-insert="∠" data-target="calcA">∠</button>
+    </div>
+    <div class="ops">
+      <button class="op on" data-op="+">+</button>
+      <button class="op" data-op="-">−</button>
+      <button class="op" data-op="*">×</button>
+      <button class="op" data-op="/">÷</button>
+    </div>
+    <label for="calcB">B (페이저 또는 복소수)</label>
+    <div class="row">
+      <input id="calcB" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="5∠-60">
+      <button class="key" data-insert="∠" data-target="calcB">∠</button>
+    </div>
+    <button class="go" id="calcBtn">계산</button>
+    <div class="out" id="calcOut"></div>
+  </section>
+
+  <footer>
+    한 번 접속하면 인터넷 없이(비행기 모드)도 작동합니다.<br>
+    ∠ 대신 &lt; 를 입력해도 됩니다.
+  </footer>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
