@@ -28,7 +28,9 @@
     main { max-width: 480px; margin: 0 auto; }
     h1 { font-size: 20px; margin: 20px 0 4px; }
     .hint { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
-    .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+    .tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 12px; }
+    .keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+    .keys .key { width: auto; padding: 10px 0; font-size: 16px; }
     .tab {
       padding: 10px 4px; border: 1px solid var(--line); background: var(--card); color: var(--text);
       border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;
@@ -76,6 +78,7 @@
     <button class="tab on" data-panel="p1">복소수→페이저</button>
     <button class="tab" data-panel="p2">페이저→복소수</button>
     <button class="tab" data-panel="p3">페이저 연산</button>
+    <button class="tab" data-panel="p4">일반 계산</button>
   </div>
 
   <section class="panel on" id="p1">
@@ -117,6 +120,27 @@
     </div>
     <button class="go" id="calcBtn">계산</button>
     <div class="out" id="calcOut"></div>
+  </section>
+
+  <section class="panel" id="p4">
+    <label for="evalIn">계산식 (예: 12*1.897/2*cos(60-41.57))</label>
+    <input id="evalIn" style="width:100%" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="12*1.897/2*cos(18.43)">
+    <div class="keys">
+      <button class="key" data-insert="sin(" data-target="evalIn">sin</button>
+      <button class="key" data-insert="cos(" data-target="evalIn">cos</button>
+      <button class="key" data-insert="tan(" data-target="evalIn">tan</button>
+      <button class="key" data-insert="√(" data-target="evalIn">√</button>
+      <button class="key" data-insert="asin(" data-target="evalIn">sin⁻¹</button>
+      <button class="key" data-insert="acos(" data-target="evalIn">cos⁻¹</button>
+      <button class="key" data-insert="atan(" data-target="evalIn">tan⁻¹</button>
+      <button class="key" data-insert="^" data-target="evalIn">xʸ</button>
+      <button class="key" data-insert="(" data-target="evalIn">(</button>
+      <button class="key" data-insert=")" data-target="evalIn">)</button>
+      <button class="key" data-insert="π" data-target="evalIn">π</button>
+      <button class="key" data-insert="*" data-target="evalIn">×</button>
+    </div>
+    <button class="go" id="evalBtn">계산</button>
+    <div class="out" id="evalOut"></div>
   </section>
 
   <footer>

@@ -84,8 +84,74 @@ const ops = {
   },
 };
 
+// ===== 일반 계산 (사칙연산 + 삼각함수, 각도는 도) =====
+// eval 없이 직접 파싱: 숫자, + - * / ^, 괄호, sin cos tan asin acos atan sqrt, pi
+const FUNCS = {
+  sin: (x) => Math.sin(x * DEG), cos: (x) => Math.cos(x * DEG), tan: (x) => Math.tan(x * DEG),
+  asin: (x) => Math.asin(x) / DEG, acos: (x) => Math.acos(x) / DEG, atan: (x) => Math.atan(x) / DEG,
+  sqrt: Math.sqrt,
+};
+
+function evalExpr(str) {
+  const s = str.replace(/\s+/g, '').replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-')
+    .replace(/√/g, 'sqrt').replace(/π/g, 'pi').replace(/°/g, '').toLowerCase();
+  if (!s) throw new Error('식을 입력해 주세요');
+  let i = 0;
+  const peek = () => s[i];
+  const expect = (c) => { if (s[i] !== c) throw new Error(`"${c}" 가 필요해요`); i++; };
+
+  function expr() {          // + -
+    let v = term();
+    while (peek() === '+' || peek() === '-') { const o = s[i++]; const r = term(); v = o === '+' ? v + r : v - r; }
+    return v;
+  }
+  function term() {          // * /
+    let v = unary();
+    while (peek() === '*' || peek() === '/' || peek() === '(' || /[a-z]/.test(peek() || '')) {
+      let o = '*';
+      if (peek() === '*' || peek() === '/') o = s[i++];
+      const r = unary();     // 2(3) 또는 2cos(30) 같은 암시적 곱셈 허용
+      if (o === '/' && r === 0) throw new Error('0으로 나눌 수 없어요');
+      v = o === '*' ? v * r : v / r;
+    }
+    return v;
+  }
+  function unary() {
+    if (peek() === '-') { i++; return -unary(); }
+    if (peek() === '+') { i++; return unary(); }
+    return power();
+  }
+  function power() {         // ^ (오른쪽 결합)
+    const b = atom();
+    if (peek() === '^') { i++; return Math.pow(b, unary()); }
+    return b;
+  }
+  function atom() {
+    if (peek() === '(') { i++; const v = expr(); expect(')'); return v; }
+    const num = s.slice(i).match(/^(\d+\.?\d*|\.\d+)(e[+-]?\d+)?/);
+    if (num) { i += num[0].length; return Number(num[0]); }
+    const name = s.slice(i).match(/^[a-z]+/);
+    if (name) {
+      i += name[0].length;
+      if (name[0] === 'pi') return Math.PI;
+      const f = FUNCS[name[0]];
+      if (!f) throw new Error(`"${name[0]}" 는 지원하지 않아요`);
+      expect('(');
+      const v = f(expr());
+      expect(')');
+      return v;
+    }
+    throw new Error('식을 읽을 수 없어요');
+  }
+
+  const v = expr();
+  if (i < s.length) throw new Error(`"${s.slice(i)}" 부분을 읽을 수 없어요`);
+  if (!isFinite(v)) throw new Error('계산할 수 없는 값이에요');
+  return v;
+}
+
 if (typeof module !== 'undefined') {
-  module.exports = { parseRect, parsePolar, parseAny, fmtPolar, fmtRect, ops };
+  module.exports = { parseRect, parsePolar, parseAny, fmtPolar, fmtRect, ops, evalExpr, fmt };
 }
 
 // ===== UI =====
@@ -151,6 +217,11 @@ if (typeof document !== 'undefined') {
   });
   $('calcBtn').addEventListener('click', doCalc);
   ['calcA', 'calcB'].forEach((id) => $(id).addEventListener('keydown', (e) => e.key === 'Enter' && doCalc()));
+
+  // 4) 일반 계산
+  const doEval = () => run('evalOut', () => fmt(evalExpr($('evalIn').value), 6));
+  $('evalBtn').addEventListener('click', doEval);
+  $('evalIn').addEventListener('keydown', (e) => e.key === 'Enter' && doEval());
 
   // 오프라인 지원
   if ('serviceWorker' in navigator) {

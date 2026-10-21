@@ -1,5 +1,5 @@
 // 오프라인 캐시 — 파일을 수정하면 버전 숫자를 올려주세요
-const CACHE = 'phasor-calc-v1';
+const CACHE = 'phasor-calc-v2';
 const FILES = ['./', 'index.html', 'app.js', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {
