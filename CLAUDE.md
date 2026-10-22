@@ -15,15 +15,19 @@
 - `app.js` — 파싱/연산/포맷 로직 + UI 이벤트. Node에서 `require('./app.js')`로 로직만 테스트 가능
 - `sw.js` — 오프라인 캐시. **파일 수정 시 `CACHE` 버전을 반드시 올릴 것** (예: v1 → v2)
 - `manifest.json`, `icon-192.png`, `icon-512.png` — 홈 화면 추가(PWA)용
+- `test.js` — 의존성 없는 단위 테스트 (`node test.js`)
+- `LICENSE` — MIT
 
 ## 규칙
 - 각도 단위: 도(°). 출력 각도 범위 (-180, 180]
 - 입력: `i`/`j` 모두 허용, `∠` 대신 `<` 허용, `−`(유니코드 마이너스) 허용
 - 숫자 표시: 소수점 4자리, 뒤의 0 제거
 - 에러 메시지는 한국어
+- 기능을 바꾸면 `test.js`에 케이스를 추가하고 통과 확인
 
 ## 테스트
 ```bash
+node test.js
 node -e 'const c=require("./app.js"); console.log(c.fmtPolar(c.parseRect("5+i")))'   # 5.099 ∠ 11.3099°
 node -e 'const c=require("./app.js"); console.log(c.fmtRect(c.parsePolar("5∠30")))'  # 4.3301 + j2.5
 ```
